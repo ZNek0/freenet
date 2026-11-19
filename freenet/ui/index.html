@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FreeNet</title>
+<style>
+:root{color-scheme:dark;--bg:#090909;--panel:#111;--panel2:#171717;--line:#292929;--text:#f3f3f3;--muted:#858585;--white:#fff;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}
+.shell{width:min(100% - 36px,760px);margin:0 auto;padding:28px 0 36px}
+header{height:42px;display:flex;align-items:center;justify-content:space-between;margin-bottom:38px}
+.logo{font-weight:850;letter-spacing:3px;font-size:17px}.logo i{font-style:normal;color:#777}
+.header-right{display:flex;align-items:center;gap:9px}
+.pill{font-size:10px;color:#aaa;border:1px solid var(--line);padding:6px 9px;border-radius:6px}
+.iconbtn{height:32px;width:34px;border:1px solid var(--line);border-radius:7px;background:#111;color:#ddd;font-size:15px}
+h1{font-size:27px;letter-spacing:-1px;font-weight:650;margin:0 0 8px}
+.lead{font-size:12px;color:var(--muted);line-height:1.6}
+.topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:23px;gap:15px}
+.status{display:flex;align-items:center;gap:7px;color:#999;font-size:11px;white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:#777;transition:.2s}
+.dot.on{background:var(--ok);box-shadow:0 0 8px rgba(74,222,128,.5)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px;margin-bottom:12px}
+.cardhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.cardtitle{font-size:13px;font-weight:650}.hint{font-size:11px;color:var(--muted);line-height:1.55}
+.module{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid #242424}
+.module:first-of-type{margin-top:10px}
+.left{display:flex;align-items:center;gap:12px}.symbol{width:34px;height:34px;border:1px solid #333;border-radius:8px;display:grid;place-items:center;font-weight:700;color:#eee}
+.name{font-size:12px;font-weight:650}.meta{font-size:10px;color:#858585;margin-top:4px}
+.switch{width:37px;height:21px;background:#333;border:1px solid #444;border-radius:20px;position:relative;transition:.18s;cursor:pointer;flex:none}
+.switch:after{content:"";position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:#aaa;transition:.18s}
+.switch.on{background:#eee;border-color:#eee}.switch.on:after{left:19px;background:#111}
+.switch.busy{opacity:.5;pointer-events:none}
+.select{width:100%;background:#0b0b0b;border:1px solid #303030;color:#eee;padding:11px 12px;border-radius:7px;font-size:12px;outline:none;margin-top:12px}
+.select:focus{border-color:#777}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.game{display:flex;align-items:center;gap:12px}
+.gameicon{width:36px;height:36px;border:1px solid #333;border-radius:9px;display:grid;place-items:center;font-size:16px}
+.gamecopy{flex:1}.gamecopy b{font-size:12px}.gamecopy p{font-size:10px;color:var(--muted);margin:4px 0 0}
+.game-options{display:none;border-top:1px solid #282828;margin-top:15px;padding-top:14px}
+.game-options.show{display:block}
+.fieldlabel{font-size:10px;color:#999;margin-bottom:7px;display:block}
+.inline-select{background:#0b0b0b;border:1px solid #303030;border-radius:7px;color:#ddd;padding:9px 10px;font-size:11px;width:100%}
+.actions{display:flex;gap:9px;margin-top:17px}
+.btn{border:1px solid #343434;background:#171717;color:#eee;padding:11px 14px;border-radius:7px;font-size:11px;font-weight:650;transition:.15s}
+.btn:hover{background:#222;border-color:#555}
+.btn.main{background:#f0f0f0;color:#090909;border-color:#f0f0f0;flex:1}
+.btn.main:hover{background:#d7d7d7}
+.btn.small{padding:8px 11px}
+.btn:disabled{opacity:.45;pointer-events:none}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:19px;color:#666;font-size:10px}
+.foot a{color:#aaa;text-decoration:none}.foot a:hover{color:white}
+.view{display:none}.view.active{display:block}
+.back{background:none;border:0;color:#aaa;padding:0;font-size:11px;margin:0 0 22px}
+.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-top:1px solid #252525;gap:15px}
+.setting:first-of-type{margin-top:12px}
+.setting b{font-size:12px;font-weight:600}.setting small{display:block;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.45}
+.setting-actions{display:flex;gap:8px;flex-wrap:wrap}
+.notice{display:none;margin-top:12px;padding:11px 12px;border:1px solid #333;border-radius:7px;background:#171717;color:#bbb;font-size:11px;line-height:1.6}
+.notice.show{display:block}
+.notice.err{border-color:#5a2b2b;color:#e8b4b4}
+.notice.good{border-color:#2b5a3a;color:#b4e8c4}
+.backupbox{background:#0b0b0b;border:1px dashed #383838;border-radius:8px;padding:13px;margin-top:13px}
+.backupbox p{font-size:10px;color:#888;line-height:1.5;margin:6px 0 12px}
+/* --- результаты проверки конфигов --- */
+.testbar{height:4px;background:#222;border-radius:2px;margin-top:12px;overflow:hidden;display:none}
+.testbar.show{display:block}
+.testbar i{display:block;height:100%;background:#eee;width:0%;transition:width .4s}
+.results{margin-top:12px;display:none}
+.results.show{display:block}
+.rrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid #262626;border-radius:7px;margin-bottom:6px;font-size:11px;background:#0d0d0d}
+.rrow.best{border-color:#4ade80;background:#0d1512}
+.rname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rbadge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:5px;flex:none}
+.rbadge.pass{background:rgba(74,222,128,.12);color:var(--ok)}
+.rbadge.fail{background:rgba(248,113,113,.12);color:var(--bad)}
+.rbadge.broken{background:rgba(248,113,113,.12);color:var(--bad)}
+.rbadge.unstable{background:rgba(251,191,36,.12);color:var(--warn)}
+.rbadge.candidate{background:rgba(150,150,150,.12);color:#bbb}
+.rtt{color:#888;font-size:10px;flex:none;min-width:64px;text-align:right}
+.logbox{display:none;margin-top:12px;background:#0b0b0b;border:1px solid #262626;border-radius:7px;padding:10px;max-height:180px;overflow:auto;font:10px/1.6 Consolas,monospace;color:#9a9a9a;white-space:pre-wrap}
+.logbox.show{display:block}
+@media(max-width:520px){.shell{width:min(100% - 26px,760px);padding-top:19px}header{margin-bottom:30px}.topline{align-items:flex-start;flex-direction:column}h1{font-size:24px}.card{padding:15px}.foot{align-items:flex-start;flex-direction:column;gap:9px}.actions{flex-wrap:wrap}.actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header>
+  <div class="logo">FREENET<i>.</i></div>
+  <div class="header-right"><span class="pill" id="verPill">DESKTOP · 1.0</span><button class="iconbtn" title="Настройки" onclick="showView('settings')">⚙</button></div>
+</header>
+
+<section class="view active" id="home">
+  <div class="topline">
+    <div><h1>Подключение</h1><div class="lead">Управляй компонентами и настройками в одном месте.</div></div>
+    <div class="status"><span class="dot" id="stateDot"></span><span id="stateText">Подключение к сервису…</span></div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><div class="cardtitle">Компоненты</div><span class="hint" id="compHint">01 / 02</span></div>
+    <div class="module">
+      <div class="left"><div class="symbol">Z</div><div><div class="name">Zapret</div><div class="meta" id="zapretText">Выключен</div></div></div>
+      <div class="switch" id="zapretSwitch" role="switch" tabindex="0" aria-checked="false" onclick="toggle('zapret')"></div>
+    </div>
+    <div class="module">
+      <div class="left"><div class="symbol">T</div><div><div class="name">TG-WG</div><div class="meta" id="tgText">Выключен</div></div></div>
+      <div class="switch" id="tgSwitch" role="switch" tabindex="0" aria-checked="false" onclick="toggle('tg')"></div>
+    </div>
+    <div class="logbox" id="logBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><div class="cardtitle">Конфигурация Zapret</div><span class="hint">SMART SETUP</span></div>
+    <div class="hint">Автоматический подбор проверит доступные профили и предложит подходящий вариант.</div>
+    <select class="select" id="config">
+      <option value="auto">Автоматический подбор</option>
+    </select>
+    <div class="actions">
+      <button class="btn" id="btnCheck" onclick="checkConfig()">Проверить конфиги</button>
+      <button class="btn" id="btnCancelTest" style="display:none" onclick="cancelTest()">Отменить</button>
+      <button class="btn" onclick="toggleDetails()">Подробнее</button>
+    </div>
+    <div class="testbar" id="testBar"><i id="testBarFill"></i></div>
+    <div class="results" id="testResults"></div>
+    <div class="notice" id="configNotice"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="game">
+        <div class="gameicon">⌁</div>
+        <div class="gamecopy"><b>Игровой режим</b><p>Отдельный профиль настроек для игр</p></div>
+      </div>
+      <div class="switch" id="gameSwitch" role="switch" tabindex="0" aria-checked="false" onclick="toggleGame()"></div>
+    </div>
+    <div class="game-options" id="gameOptions">
+      <label class="fieldlabel" for="gameProfile">Профиль</label>
+      <select class="inline-select" id="gameProfile">
+        <option>Универсальный</option><option>CS2</option><option>Другая игра</option>
+      </select>
+      <div class="hint" style="margin-top:8px">Режим применит выбранный профиль и покажет фактические результаты сетевых тестов. Сам по себе он не гарантирует снижение пинга.</div>
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top:16px">
+    <button class="btn main" onclick="startSelected()">Запустить выбранное</button>
+    <button class="btn" onclick="stopAll()">Остановить всё</button>
+  </div>
+  <div class="notice" id="homeNotice"></div>
+  <footer class="foot"><span>FREENET — сетевые инструменты без лишнего.</span><a href="#" onclick="showView('settings');return false">Настройки приложения →</a></footer>
+</section>
+
+<section class="view" id="settings">
+  <button class="back" onclick="showView('home')">← &nbsp; Назад</button>
+  <div class="topline"><div><h1>Настройки</h1><div class="lead">Поведение FREENET и управление данными.</div></div></div>
+
+  <div class="card">
+    <div class="cardtitle">Запуск и поведение</div>
+    <div class="setting"><div><b>Автозапуск Windows</b><small>Открывать FREENET при входе в систему</small></div><div class="switch" id="startupSwitch" data-key="startup" onclick="settingToggle(this)"></div></div>
+    <div class="setting"><div><b>Сворачивать в системный трей</b><small>Закрытие окна будет сворачивать приложение в область уведомлений</small></div><div class="switch on" id="traySwitch" data-key="tray" onclick="settingToggle(this)"></div></div>
+    <div class="setting"><div><b>Запускать модули автоматически</b><small>Использовать выбранные компоненты после старта Windows</small></div><div class="switch" id="modulesSwitch" data-key="autoModules" onclick="settingToggle(this)"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><div><div class="cardtitle">Обновления</div><div class="hint" style="margin-top:5px">FREENET, Zapret и TG-WG</div></div><span class="pill">AUTO</span></div>
+    <div class="setting"><div><b>Автоматически проверять обновления</b><small>Проверять новые версии при запуске приложения</small></div><div class="switch on" id="updatesSwitch" data-key="autoUpdates" onclick="settingToggle(this)"></div></div>
+    <div class="row" style="padding-top:12px"><span class="hint" id="updateState">Последняя проверка: ещё не выполнялась</span><button class="btn small" id="btnUpd" onclick="checkUpdates()">Проверить сейчас</button></div>
+    <div class="testbar" id="dlBar"><i id="dlBarFill"></i></div>
+    <div class="notice" id="updateNotice"></div>
+  </div>
+
+  <div class="card">
+    <div class="cardtitle">Резервные копии</div>
+    <div class="hint" style="margin-top:6px">Сохраняй свои профили и настройки перед обновлением или изменениями.</div>
+    <div class="backupbox">
+      <div class="row"><b style="font-size:11px">Резервная копия конфигураций</b><span class="pill">LOCAL</span></div>
+      <p>Экспортируй настройки в файл или выбери ранее сохранённую копию для восстановления.</p>
+      <div class="setting-actions">
+        <button class="btn small" onclick="backupExport()">Экспортировать</button>
+        <button class="btn small" onclick="document.getElementById('backupFile').click()">Импортировать</button>
+        <input type="file" id="backupFile" accept=".json,.zip" hidden onchange="backupImport(this)">
+      </div>
+    </div>
+    <div class="notice" id="backupNotice"></div>
+  </div>
+  <footer class="foot"><span>FREENET Desktop · 1.0.0</span><a href="#" onclick="showView('home');return false">На главную ↑</a></footer>
+</section>
+</main>
+<script>
+/* ===================== bridge ===================== */
+const TOKEN = (new URLSearchParams(location.search).get('t')) || '';
+async function api(path, opts={}){
+  const r = await fetch('/api'+path, Object.assign({headers:{'X-Freenet-Token':TOKEN,'Content-Type':'application/json'}},opts));
+  return r.json();
+}
+const state={zapret:false,tg:false,game:false};
+let lastProfiles=[], testing=false, detailsShown=false, loaded=false;
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function showNotice(id,msg,kind){const n=document.getElementById(id);n.textContent=msg;n.className='notice show'+(kind?' '+kind:'')}
+function hideNotice(id){document.getElementById(id).className='notice'}
+
+/* ===================== polling ===================== */
+async function refresh(){
+  try{
+    const st = await api('/state');
+    applyState(st);
+    if(!loaded){loaded=true;}
+  }catch(e){
+    document.getElementById('stateText').textContent='Сервис недоступен';
+  }
+}
+function fmtUptime(s){if(!s)return '';const m=Math.floor(s/60),ss=s%60;return ' · '+m+'м '+ss+'с';}
+function applyState(st){
+  // компоненты
+  state.zapret = !!st.zapret.running; state.tg = !!st.tg.running;
+  setSwitch('zapret',state.zapret); setSwitch('tg',state.tg);
+  document.getElementById('zapretText').textContent = state.zapret?('Работает'+fmtUptime(st.zapret.uptime)):'Выключен';
+  let tgMeta='Выключен';
+  if(state.tg){tgMeta='SOCKS5 на порту '+((st.settings&&st.settings.tgConfig&&st.settings.tgConfig.port)||10808)+fmtUptime(st.tg.uptime);}
+  else if(st.versions.tg){tgMeta='Установлен '+st.versions.tg;}
+  document.getElementById('tgText').textContent=tgMeta;
+  document.getElementById('compHint').textContent=(st.versions.zapret||st.versions.tg)?('v:'+ (st.versions.zapret||'?')+' / '+(st.versions.tg||'?')):'01 / 02';
+  updateStateDot();
+  // профили zapret
+  const sel=document.getElementById('config');
+  if(JSON.stringify(st.profiles)!==JSON.stringify(lastProfiles)){
+    lastProfiles=st.profiles;
+    const cur=sel.value;
+    sel.innerHTML='<option value="auto">Автоматический подбор</option>'+
+      st.profiles.map(p=>'<option value="'+escAttr(p)+'">'+escHtml(p)+'</option>').join('');
+    if(cur) sel.value=cur;
+    if(st.settings.selectedConfig) sel.value=st.settings.selectedConfig;
+  }
+  // настройки
+  const s=(st.settings&&st.settings.settings)||{};
+  ['startup','tray','autoModules','autoUpdates'].forEach(k=>{
+    const el=document.getElementById(k==='autoModules'?'modulesSwitch':k==='autoUpdates'?'updatesSwitch':k+'Switch');
+    if(el) setSilent(el, !!s[k]);
+  });
+  if(st.settings){
+    state.game=!!st.settings.gameMode;
+    document.getElementById('gameSwitch').classList.toggle('on',state.game);
+    document.getElementById('gameOptions').classList.toggle('show',state.game);
+    if(st.settings.gameProfile) document.getElementById('gameProfile').value=st.settings.gameProfile;
+  }
+  if(st.settings&&st.settings.lastUpdateCheck)
+    document.getElementById('updateState').textContent='Последняя проверка: '+st.settings.lastUpdateCheck;
+  // прогресс загрузки
+  const dl=st.download||{};
+  const bar=document.getElementById('dlBar'), fill=document.getElementById('dlBarFill');
+  if(dl.active){bar.classList.add('show');fill.style.width=(dl.total?Math.round(dl.done/dl.total*100):5)+'%';
+    document.getElementById('updateState').textContent=dl.stage||'Загрузка…';}
+  else if(bar.classList.contains('show')&&!dl.error){bar.classList.remove('show');document.getElementById('updateState').textContent='Компоненты обновлены';}
+  else if(dl.error){bar.classList.remove('show');showNotice('updateNotice','Ошибка загрузки: '+dl.error,'err');}
+  // тест профилей
+  const t=st.test||{};
+  if(testing){
+    const tb=document.getElementById('testBar');tb.classList.add('show');
+    document.getElementById('testBarFill').style.width=(t.total?Math.round((t.current||0)/t.total*100):3)+'%';
+    renderResults(t);
+    if(t.stage==='Готово'){finishTest(t);}
+  }
+  // лог
+  if(detailsShown){loadLog();}
+}
+function setSwitch(name,on){const sw=document.getElementById(name+'Switch');sw.classList.toggle('on',on);sw.setAttribute('aria-checked',String(on));}
+function setSilent(el,on){el.classList.toggle('on',on);el.setAttribute('aria-checked',String(on));}
+function updateStateDot(){const any=state.zapret||state.tg;document.getElementById('stateText').textContent=any?'Компоненты активны':'Ожидание запуска';document.getElementById('stateDot').classList.toggle('on',any);}
+
+/* ===================== actions ===================== */
+async function toggle(name){
+  const sw=document.getElementById(name+'Switch');sw.classList.add('busy');
+  const on=!state[name];
+  try{
+    const r=await api('/toggle',{method:'POST',body:JSON.stringify({component:name,on:on})});
+    if(r.error){showNotice('homeNotice',r.error,'err');}
+    else{hideNotice('homeNotice');state[name]=on;setSwitch(name,on);updateStateDot();}
+  }catch(e){showNotice('homeNotice','Ошибка связи с сервисом','err');}
+  sw.classList.remove('busy');
+  refresh();
+}
+async function startSelected(){
+  const patch={selectedConfig:document.getElementById('config').value,gameMode:state.game,gameProfile:document.getElementById('gameProfile').value};
+  await api('/settings',{method:'POST',body:JSON.stringify(patch)});
+  if(!state.zapret&&!state.tg){
+    // если ничего не включено — включаем согласно последнему выбору
+    const r=await api('/start_selected',{method:'POST',body:'{}'});
+    showNotice('homeNotice','Нечего запускать — включи Zapret или TG-WG.','err');return;
+  }
+  const r=await api('/start_selected',{method:'POST',body:'{}'});
+  const errs=Object.values(r).filter(x=>x&&x.error).map(x=>x.error);
+  showNotice('homeNotice',errs.length?('Ошибки: '+errs.join('; ')):'Запуск выполненный.',errs.length?'err':'good');
+  refresh();
+}
+async function stopAll(){
+  await api('/stop_all',{method:'POST',body:'{}'});
+  state.zapret=false;state.tg=false;setSwitch('zapret',false);setSwitch('tg',false);
+  document.getElementById('zapretText').textContent='Выключен';document.getElementById('tgText').textContent='Выключен';
+  updateStateDot();showNotice('homeNotice','Все компоненты остановлены.');refresh();
+}
+function toggleGame(){state.game=!state.game;const s=document.getElementById('gameSwitch');s.classList.toggle('on',state.game);s.setAttribute('aria-checked',String(state.game));document.getElementById('gameOptions').classList.toggle('show',state.game);
+  api('/settings',{method:'POST',body:JSON.stringify({gameMode:state.game,gameProfile:document.getElementById('gameProfile').value})});}
+
+/* ---------- SMART SETUP ---------- */
+async function checkConfig(){
+  hideNotice('configNotice');
+  document.getElementById('testResults').innerHTML='';
+  try{
+    const r=await api('/configs/test',{method:'POST',body:JSON.stringify({gameMode:state.game})});
+    if(r.error){showNotice('configNotice',r.error,'err');return;}
+    testing=true;
+    document.getElementById('btnCheck').disabled=true;
+    document.getElementById('btnCancelTest').style.display='';
+    showNotice('configNotice','Проверяем каждый профиль: статический аудит + сетевой прогон. Это займёт несколько минут.');
+  }catch(e){showNotice('configNotice','Сервис недоступен','err');}
+}
+async function cancelTest(){await api('/configs/test/cancel',{method:'POST',body:'{}'});}
+function finishTest(t){
+  testing=false;
+  document.getElementById('btnCheck').disabled=false;
+  document.getElementById('btnCancelTest').style.display='none';
+  document.getElementById('testBar').classList.remove('show');
+  renderResults(t);
+  if(t.best){
+    const sel=document.getElementById('config');
+    sel.value='auto';
+    showNotice('configNotice','Рекомендуемый профиль: «'+t.best+'». Выбери его в списке или оставь автоподбор.','good');
+  }else{
+    showNotice('configNotice','Ни один профиль не прошёл полный сетевой тест. Проверьте подключение или запустите приложение от имени администратора.','err');
+  }
+}
+const VERDICT_LABEL={pass:'РАБОТАЕТ',fail:'НЕ РАБОТАЕТ',broken:'СЛОМАН',unstable:'НЕСТАБИЛЬНО',candidate:'ТРЕБУЕТ WINDOWS'};
+function renderResults(t){
+  const box=document.getElementById('testResults');
+  if(!t.results||!t.results.length)return;
+  box.classList.add('show');
+  box.innerHTML=t.results.map(r=>{
+    const net=r.net||{};
+    const rt=(net.avg_rtt!=null?net.avg_rtt+' ms':'—');
+    const reach=(net.reachable!=null?net.reachable+'/'+net.total:'');
+    return '<div class="rrow'+(t.best===r.profile?' best':'')+'">'+
+      '<span class="rname" title="'+escAttr(r.profile)+'">'+escHtml(r.profile)+(t.best===r.profile?' ★':'')+'</span>'+
+      '<span class="rtt">'+escHtml(reach)+' · '+rt+'</span>'+
+      '<span class="rbadge '+r.verdict+'">'+(VERDICT_LABEL[r.verdict]||r.verdict)+'</span></div>';
+  }).join('');
+}
+function toggleDetails(){
+  detailsShown=!detailsShown;
+  document.getElementById('logBox').classList.toggle('show',detailsShown);
+  if(detailsShown)loadLog();
+}
+async function loadLog(){
+  try{
+    const a=await api('/log/zapret'), b=await api('/log/tg');
+    const lines=[].concat(a.lines||[],(b.lines||[]).map(l=>'[tg] '+l));
+    const box=document.getElementById('logBox');
+    box.textContent=lines.length?lines.slice(-80).join('\n'):'(пусто — процессы пишут вывод только при локальном запуске)';
+    box.scrollTop=box.scrollHeight;
+  }catch(e){}
+}
+
+/* ---------- settings ---------- */
+async function settingToggle(el,label){
+  el.classList.toggle('on');
+  const on=el.classList.contains('on');
+  el.setAttribute('aria-checked',String(on));
+  await api('/settings',{method:'POST',body:JSON.stringify({settings:{[el.dataset.key]:on}})});
+}
+async function checkUpdates(){
+  document.getElementById('btnUpd').disabled=true;
+  document.getElementById('updateState').textContent='Проверка GitHub Releases…';
+  try{
+    const u=await api('/updates/check');
+    let msg=[];
+    if(u.zapret&&u.zapret.latest)msg.push('Zapret: '+ (u.zapret.need_update?('доступно '+u.zapret.latest+' (установлен '+(u.zapret.installed||'нет')+')'):'актуально '+u.zapret.latest));
+    if(u.tg&&u.tg.latest)msg.push('TG-WG: '+ (u.tg.need_update?('доступно '+u.tg.latest:'актуально '+u.tg.latest)));
+    const need=(u.zapret&&u.zapret.need_update)||(u.tg&&u.tg.need_update);
+    showNotice('updateNotice',msg.join(' · ')+(need?'. Нажмите «Обновить» для загрузки.':'.'),'good');
+    if(need){
+      const btn=document.createElement('button');
+      await api('/install',{method:'POST',body:JSON.stringify({component:'all'})});
+      showNotice('updateNotice','Загрузка обновлений началась — следите за прогрессом ниже.','good');
+    }
+    refresh();
+  }catch(e){showNotice('updateNotice','Не удалось проверить обновления: '+e,'err');}
+  document.getElementById('btnUpd').disabled=false;
+}
+function backupExport(){
+  api('/state').then(st=>{
+    const data={app:'FREENET',formatVersion:1,createdAt:new Date().toISOString(),
+      selectedConfig:document.getElementById('config').value,gameMode:state.game,
+      gameProfile:document.getElementById('gameProfile').value,settings:(st.settings&&st.settings.settings)||{},
+      tgConfig:(st.settings&&st.settings.tgConfig)||null};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FREENET-backup.json';a.click();
+    URL.revokeObjectURL(a.href);
+    showNotice('backupNotice','Резервная копия настроек сохранена в JSON.','good');
+  });
+}
+async function backupImport(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  try{
+    const text=await f.text();
+    const d=JSON.parse(text);
+    if(d.app!=='FREENET'||!d.formatVersion)throw new Error('формат не распознан');
+    const patch={selectedConfig:d.selectedConfig||'auto',gameMode:!!d.gameMode,gameProfile:d.gameProfile||'Универсальный'};
+    if(d.settings)patch.settings=d.settings;
+    if(d.tgConfig)patch.tgConfig=d.tgConfig;
+    await api('/settings',{method:'POST',body:JSON.stringify(patch)});
+    showNotice('backupNotice','Настройки восстановлены из '+f.name+'.','good');
+    refresh();
+  }catch(e){showNotice('backupNotice','Файл повреждён или не является копией FREENET.','err');}
+  input.value='';
+}
+
+/* utils */
+function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function escAttr(s){return escHtml(s);}
+document.querySelectorAll('.switch').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}}));
+document.getElementById('config').addEventListener('change',e=>{
+  api('/settings',{method:'POST',body:JSON.stringify({selectedConfig:e.target.value})});
+});
+document.getElementById('gameProfile').addEventListener('change',e=>{
+  api('/settings',{method:'POST',body:JSON.stringify({gameProfile:e.target.value})});
+});
+setInterval(refresh,2000); refresh();
+</script>
+</body>
+</html>
